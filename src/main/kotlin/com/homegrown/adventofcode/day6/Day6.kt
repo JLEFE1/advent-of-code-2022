@@ -14,12 +14,11 @@ object Day6 {
     }
 
     private fun getLastCharOfEndOfMessageMarker(message: String, markerSize: Int): Int {
-        for (marker in markerSize .. message.lastIndex) {
-            if(duplicateCount(message.substring(marker - markerSize until marker)) == 0) {
-                return marker
-            }
-        }
-        throw IllegalArgumentException("Message does not contain end of message marker")
+        return message
+            .windowed(markerSize)
+            .withIndex()
+            .first { indexedValue -> duplicateCount(indexedValue.value) == 0 }
+            .index + markerSize
     }
 
     private fun duplicateCount(text: String): Int =
