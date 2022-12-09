@@ -6,3 +6,14 @@ fun String.readLines() =
 
 fun <T> String.parseWith(parser: (String) -> T): List<T> =
     this.readLines().map(parser)
+
+object Debugging {
+    private var debugEnabled = false
+    fun <T> T.debug(block: (it: T) -> String) = if(debugEnabled) this.also { println(block(this)) } else this
+    fun enable() { debugEnabled = true }
+    fun disable() { debugEnabled = false }
+    fun <T> withDebugging(block: () -> T) : T {
+        enable()
+        return block().also { disable() }
+    }
+}
