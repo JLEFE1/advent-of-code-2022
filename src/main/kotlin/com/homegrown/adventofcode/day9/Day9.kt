@@ -6,10 +6,9 @@ import com.homegrown.adventofcode.common.Debugging.debug
 class Day9 constructor() {
 
     fun solve1(inputForest: List<String>, size: Int): Int {
-        val head = Knot(KnotLocation(size.floorDiv(2), size.floorDiv(2)))
-        val tail = Knot(KnotLocation(size.floorDiv(2), size.floorDiv(2)))
-        val bridge = getBridge(size)
-        bridge[tail.location.x][tail.location.y] = true
+        val head = Knot(KnotLocation(0, 0))
+        val tail = Knot(KnotLocation(0, 0))
+        val tailWasHere: MutableSet<KnotLocation> = HashSet()
 
         inputForest.forEach { action ->
             val numberOfMoves = action.split(" ")[1].toInt()
@@ -18,20 +17,20 @@ class Day9 constructor() {
             for (i in 0 until numberOfMoves) {
                 moveHead(head, Action.valueOf(typeOfMove))
                 tail.calcMove(head)
-                tailWasHere(bridge, tail.location)
+                tailWasHere.add(tail.location)
             }
 
         }
 
-        return countTailVisits(bridge, size)
+        return tailWasHere.size
     }
 
     fun solve2(inputForest: List<String>, size: Int): Int {
 
         Debugging.disable()
-        val bridge = getBridge(size)
-        val rope = MutableList(10) { Knot(KnotLocation(size.floorDiv(2), size.floorDiv(2))) }
-        bridge[rope[9].location.x][rope[9].location.y] = true
+        val rope = MutableList(10) { Knot(KnotLocation(0, 0)) }
+
+        val tailWasHere: MutableSet<KnotLocation> = HashSet()
 
         inputForest.forEach { action ->
             val numberOfMoves = action.split(" ")[1].toInt()
@@ -43,11 +42,11 @@ class Day9 constructor() {
                 for (ropePart in 1 until 10) {
                     rope[ropePart].calcMove(rope[ropePart - 1])
                 }
-                tailWasHere(bridge, rope[9].location)
+                tailWasHere.add(rope[9].location)
             }
         }
 
-        return countTailVisits(bridge, size)
+        return tailWasHere.size
     }
 
     class Knot(var location: KnotLocation) {
@@ -67,6 +66,13 @@ class Day9 constructor() {
         }
     }
 
+    private fun moveHead(head: Knot, step: Action) {
+        head.location = KnotLocation(
+            head.location.x + step.locationCorrection.x,
+            head.location.y + step.locationCorrection.y
+        ).debug { "Head: ${head.location.x}, ${head.location.y}" }
+    }
+
     enum class Action(val locationCorrection: KnotLocation) {
         R(KnotLocation(1, 0)),
         L(KnotLocation(-1, 0)),
@@ -75,38 +81,6 @@ class Day9 constructor() {
 
     }
 
-    private fun moveHead(head: Knot, step: Action) {
-        head.location = KnotLocation(
-            head.location.x + step.locationCorrection.x,
-            head.location.y + step.locationCorrection.y
-        ).debug { "Head: ${head.location.x}, ${head.location.y}" }
-    }
-
-    private fun tailWasHere(bridge: Array<BooleanArray>, location: KnotLocation) {
-        bridge[location.x][location.y] = true
-    }
-
-    private fun countTailVisits(bridge: Array<BooleanArray>, size: Int): Int {
-        var count = 0;
-        for (i in 0 until size) {
-            for (j in 0 until size) {
-                if (bridge[i][j]) {
-                    count++
-                }
-            }
-        }
-        return count
-    }
-
-    private fun getBridge(size: Int): Array<BooleanArray> {
-        val bridge = Array(size) { BooleanArray(size) }
-        for (i in 0 until size) {
-            for (j in 0 until size) {
-                bridge[i][j] = false
-            }
-        }
-        return bridge
-    }
 
 
 }
